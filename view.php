@@ -41,22 +41,46 @@ $category = $DB->get_record('report_customsql_categories', ['id' => $report->cat
 $embed = optional_param('embed', 0, PARAM_BOOL);
 $urlparams['embed'] = $embed;
 
-// Setup the page.
-admin_externalpage_setup('report_customsql', '', $urlparams,
-        '/report/customsql/view.php', ['pagelayout' => 'report']);
-$PAGE->set_title(format_string($report->displayname));
-$PAGE->navbar->add(format_string($category->name), report_customsql_url('category.php', ['id' => $report->categoryid]));
-$PAGE->navbar->add(format_string($report->displayname));
-
 if ($embed) {
     $PAGE->set_pagelayout('embedded');
 }
 
+$context = context_system::instance();
+$PAGE->set_context($context);
+
 $output = $PAGE->get_renderer('report_customsql');
 
-$context = context_system::instance();
-if (!empty($report->capability)) {
+$ids = array(6,7,8);
+
+if (!empty($report->capability) && !in_array($id, $ids)) {
+    // Setup the page.
+
+    $PAGE->set_title(format_string($report->displayname));
+    $PAGE->navbar->add(format_string($category->name), report_customsql_url('category.php', ['id' => $report->categoryid]));
+    $PAGE->navbar->add(format_string($report->displayname));
+
+    admin_externalpage_setup('report_customsql', '', $urlparams,
+        '/report/customsql/view.php', ['pagelayout' => 'report']);
     require_capability($report->capability, $context);
+}else{
+
+    $PAGE->set_title("Reporte de habilitados - " . $report->displayname);
+    $PAGE->set_url(report_customsql_url('view.php', $urlparams));
+
+    switch($id){
+        case 6:
+            $coursecontext = context_course::instance(1336);
+            require_capability('moodle/course:manageactivities', $coursecontext);
+            break;
+        case 7:
+            $coursecontext = context_course::instance(6112);
+            require_capability('moodle/course:manageactivities', $coursecontext);
+            break;
+        case 8:
+            $coursecontext = context_course::instance(8007);
+            require_capability('moodle/course:manageactivities', $coursecontext);
+            break;
+    }
 }
 
 report_customsql_log_view($id);
@@ -118,7 +142,9 @@ if ($report->runable == 'manual') {
             }
             $mform->display();
 
-            echo $output->render_report_actions($report, $category, $context);
+            if(!in_array($id, $ids)){
+                echo $output->render_report_actions($report, $category, $context);
+            }
 
             echo $OUTPUT->footer();
             die;

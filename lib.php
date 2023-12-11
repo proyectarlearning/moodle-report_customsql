@@ -67,8 +67,24 @@ function report_customsql_pluginfile($course, $cm, $context, $filearea, $args, $
 
     require_login();
     $context = context_system::instance();
-    if (!empty($report->capability)) {
+    if (!empty($report->capability) && !in_array($id, array(6,7,8))) {
         require_capability($report->capability, $context);
+    }else{
+    
+        switch($id){
+            case 6:
+                $coursecontext = context_course::instance(1336);
+                require_capability('moodle/course:manageactivities', $coursecontext);
+                break;
+            case 7:
+                $coursecontext = context_course::instance(6112);
+                require_capability('moodle/course:manageactivities', $coursecontext);
+                break;
+            case 8:
+                $coursecontext = context_course::instance(8007);
+                require_capability('moodle/course:manageactivities', $coursecontext);
+                break;
+        }
     }
 
     $queryparams = report_customsql_get_query_placeholders_and_field_names($report->querysql);
